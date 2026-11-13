@@ -2,4 +2,4 @@
 
 #include <string>
 
-Metadata_sensor::Metadata_Sensor(std::string ) {};
+Metadata_sensor::Metadata_sensor(std::string ) {};

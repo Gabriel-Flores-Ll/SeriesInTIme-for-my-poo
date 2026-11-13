@@ -3,7 +3,6 @@
 
 #include <string>
 
-
 /** 
 * @class metadata_sensor
 * @brief It contains the data of the sensor like: code of the channel, 
