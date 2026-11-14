@@ -16,9 +16,17 @@ class MetadataSensor {
         std::string codeOfChannel;
         std::string unitOfMeasure;
         double samplingRate;
+
+        /** 
+        * @brief Comprove if a string have a certain contuinity of char in a row, also checks it to have no spaces
+        * @param givenSTR string provided by reference to check the continuty of it
+        * @param requiredContinuity indicates the required continuty, for example 2, that indicates the minimum chars that the string must have
+        * @return indicates if the string have all the requirements specified
+        */
+        bool isAContinousSTR(std::string &givenSTR, int requiredContinuity) const;
     public:
         /** 
-        * @brief construct the metadata sensor
+        * @brief constructor of the MetadataSensor
         * @param givenCode string of the code of the channel provided, it must not be empty
         * @param givenUnit string thatindicates unit of measure, (micro volts or somthing), must be not empty
         * @param givenSR double that indicates the frecuency of the samples, it is given allways in Hz, SR(sampling rate), must be a valour more than 0
@@ -27,7 +35,7 @@ class MetadataSensor {
 
         /**
         * @brief This funtion change the name of the channel, changing the code
-        * @param givenCode this is the code that will be the new for the channel must be diferrent from an empty code, at least 3 char code in a row
+        * @param givenCode this is the code that will be the new for the channel must be diferrent from an empty code, at least 1 char code in a row
         * @return will return a bool to indicate if the code was changed
         */
         bool setCodeOfChannel (std::string givenCode);
@@ -56,14 +64,14 @@ class MetadataSensor {
         * @param givenSecond recives a second in a double, it musk be more than 0.0 to be correct
         * @return the corresponding index that mach to the sample in the second provided
         */
-        int ConvertIndexSecs (double givenSecond);
+        int ConvertIndexSecs (double givenSecond) const;
 
         /**
         * @brief recives an Index of a sample in order to convert it to the exact second of meassurement of that sample
         * @param givenIndex the index of a sample
         * @return the corresponding second of measurement of the sample that mach to the index provided
         */
-        double ConvertIndexSecs (int givenIndex);
+        double ConvertIndexSecs (int givenIndex) const;
     };
 
 #endif 
