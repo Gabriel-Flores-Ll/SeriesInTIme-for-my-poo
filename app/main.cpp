@@ -3,7 +3,7 @@
 #include <iostream>
 
 int main () {
-    MetadataSensor meta1("data");
+    MetadataSensor meta1("1234567890", "microVolts", 60);
 
     std::cout << "estas corriendo el progarama final";
 

@@ -1,5 +1,3 @@
 #include "MetadataSensor.h"
 
-#include <string>
-
-MetadataSensor::MetadataSensor(std::string givenCode) : codeOfChannel(givenCode) {};
+MetadataSensor::MetadataSensor(std::string givenCode, std::string givenUnit, double givenSR) : codeOfChannel(givenCode) , unitOfMeasure(givenUnit), samplingRate(givenSR) {};
