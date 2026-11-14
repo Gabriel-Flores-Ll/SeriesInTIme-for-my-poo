@@ -9,8 +9,7 @@ int main () {
     
     std::cout << meta1.ConvertIndexSecs(2.23) << std::endl;
 
-    std::cout << "estas corriendo el progarama De pruebas" << std::endl;
-
+    std::cout << "estas corriendo el progarama De pruebas" << std::endl; 
 
 
     return 0;

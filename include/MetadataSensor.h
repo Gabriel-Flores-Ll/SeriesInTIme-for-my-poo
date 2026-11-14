@@ -5,7 +5,7 @@
 
 
 /** 
-* @class metadata_sensor
+* @class MetadataSensor
 * @brief It contains the data of the sensor like: code of the channel, 
 * @invariant codeOfChannel != ""   
 * @invariant unitOfMeasure != ""
