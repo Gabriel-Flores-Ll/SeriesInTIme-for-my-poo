@@ -3,9 +3,9 @@
 #include <iostream>
 
 int main () {
-    Metadata_sensor meta1;
+    MetadataSensor meta1("1234567890");
 
-    std::cout << "estas corriendo el progarama final";
+    std::cout << "estas corriendo el progarama De pruebas" << std::endl;
 
     return 0;
 };

@@ -2,4 +2,4 @@
 
 #include <string>
 
-Metadata_sensor::Metadata_sensor(std::string ) {};
+MetadataSensor::MetadataSensor(std::string givenCode) : codeOfChannel(givenCode) {};
