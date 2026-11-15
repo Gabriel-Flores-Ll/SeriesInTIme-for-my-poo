@@ -22,9 +22,9 @@ class DinamicArr {
         /**
         * @brief Creates an array with all the elemnts set, it relies in setElementsInRow method
         * @param rowOfElements Its the pointer to the block of memory to copy
-        * @param numberOfElements Its the number of elements to create the space in heap for the array
+        * @param providedNumberOfElements Its the number of elements to create the space in heap for the array
         */
-        DinamicArr(double* rowOfElements, int numberOfElements);
+        DinamicArr(double* rowOfElements, int providedNumberOfElements);
 
         /**
         * @brief Constructor copy of the class, It will create a DinamicArr reliing on the deep copy of the class to create a copy
@@ -56,7 +56,7 @@ class DinamicArr {
         * @param numberOfElements Its the number of elements to create the space in heap for the array
         * @return A bool that indicates if the operation was succesful or not
         */
-        bool setElementsInRow ( double* rowOfElements, int numberOfElements);
+        bool setElementsInRow ( double* rowOfElements, int providedNumberOfElements);
 
         int getNumberOfElements();
 
@@ -68,16 +68,16 @@ class DinamicArr {
         double getElement (int index);
 
         /**
-        * @brief creates an array in the heap copy of the one contained by the class
+        * @brief creates an array in the heap copy of the one contained by the class with the exact same samples
         * @return The pointer that points to the memory in the heap that contains the copy of the array
         */
         double* getAllElements ();
 
         /**
-        * @brief The overcharge of the operator = to make a deep copy of the object
+        * @brief The overcharge of the operator = to make a deep copy of the object relied in setElementsInRow method
         * @param oher another DinamicArr by reference
         * @return A dinamic Arr that is a deep copy 
         */
-        DinamicArr operator=(DinamicArr &other);
+        DinamicArr operator=(const DinamicArr &other);
 };
 #endif
