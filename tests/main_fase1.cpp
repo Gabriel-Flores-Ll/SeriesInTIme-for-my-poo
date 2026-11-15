@@ -1,4 +1,5 @@
 #include "MetadataSensor.h"
+#include "ChannelStadistics.h"
 
 #include <iostream>
 
@@ -10,6 +11,8 @@ int main () {
     std::cout << meta1.ConvertIndexSecs(2.23) << std::endl;
 
     std::cout << "estas corriendo el progarama De pruebas" << std::endl; 
+
+    ChannelStadistics stat;
 
 
     return 0;

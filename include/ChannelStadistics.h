@@ -31,9 +31,12 @@ class ChannelStadistics {
         ChannelStadistics();
 
         /**
-        * @brief 
+        * @brief it will calculate the new stadistics of the channel with the provided block of memory and the quantity of elements, it will actualize all the class variables
+        * @param initOfMemory a pointer/direction of memory of the inicial element of the block of memory of the channel data
+        * @param quantityOfElements indicates the number of elements that the channel posses
+        * @return A bool that indicates if the asignation and calculus of the valours was succesful
         */
-        bool updateStadistics();
+        bool updateStadistics(double* initOfMemory, int quantityOfElements);
 };
 
 #endif
