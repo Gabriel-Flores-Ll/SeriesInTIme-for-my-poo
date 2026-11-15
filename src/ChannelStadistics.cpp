@@ -12,7 +12,6 @@ ChannelStadistics::ChannelStadistics() {
 }
 
 bool ChannelStadistics::updateStadistics(double* initOfMemory, int quantityOfElements) {
-    // calculus of the media, min, max and Total energy, first 
     double sumAverage = 0;
     double tempmax = *initOfMemory;
     double tempmin = *initOfMemory;
@@ -20,14 +19,13 @@ bool ChannelStadistics::updateStadistics(double* initOfMemory, int quantityOfEle
     for (int n = 0; n < quantityOfElements; n++) {
         sumAverage += *(initOfMemory + n);
         if (*(initOfMemory + n) < tempmin) {tempmin = *(initOfMemory+n);}
-        if (*(initOfMemory + n) < tempmax) {tempmax = *(initOfMemory+n);}
+        if (*(initOfMemory + n) > tempmax) {tempmax = *(initOfMemory+n);}
     }
     average = sumAverage / quantityOfElements;
     totalEnergy = (sumAverage * sumAverage);
     maximum = tempmax;
     if(tempmin <= tempmax) {minimum = tempmin;}
 
-    //calculus of cuadratics deviations respect to the media, and variance
     if (quantityOfElements == 1) { variation = 0.0; standardDesviation = 0.0;} 
     else {
         double sumVariance;
@@ -39,3 +37,10 @@ bool ChannelStadistics::updateStadistics(double* initOfMemory, int quantityOfEle
     }
     return true;
 }
+
+double ChannelStadistics::getAverage() {return average;};
+double ChannelStadistics::getVariation() {return variation;};
+double ChannelStadistics::getStandardDesviation() {return standardDesviation;}
+double ChannelStadistics::getMinimum() {return minimum;};
+double ChannelStadistics::getMaximum() {return maximum;};
+double ChannelStadistics::getTotalEnergy() {return totalEnergy;};

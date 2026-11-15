@@ -2,6 +2,7 @@
 #include "ChannelStadistics.h"
 
 #include <iostream>
+#include <ostream>
 
 int main () {
     MetadataSensor meta1("A2", "microVolts", 60);
@@ -12,8 +13,11 @@ int main () {
 
     std::cout << "estas corriendo el progarama De pruebas" << std::endl; 
 
-    ChannelStadistics stat;
+    double* data = new double[10] {1, 2, 3, 5, 1, 6, 1, 2, 3, 1};
 
+    ChannelStadistics stat(data, 10);
+
+    std::cout << stat.getAverage() << " " << stat.getStandardDesviation() << " "  << stat.getMaximum() << " " << stat.getTotalEnergy() << " " << std::endl;
 
     return 0;
 };

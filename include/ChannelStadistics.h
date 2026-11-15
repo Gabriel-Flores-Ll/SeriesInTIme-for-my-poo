@@ -37,6 +37,13 @@ class ChannelStadistics {
         * @return A bool that indicates if the asignation and calculus of the valours was succesful
         */
         bool updateStadistics(double* initOfMemory, int quantityOfElements);
+
+        double getAverage();
+        double getVariation();
+        double getStandardDesviation();
+        double getMinimum();
+        double getMaximum();
+        double getTotalEnergy();
 };
 
 #endif
