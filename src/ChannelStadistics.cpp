@@ -13,16 +13,18 @@ ChannelStadistics::ChannelStadistics() {
 
 bool ChannelStadistics::updateStadistics(double* initOfMemory, int quantityOfElements) {
     double sumAverage = 0;
+    double sumEnergy = 0;
     double tempmax = *initOfMemory;
     double tempmin = *initOfMemory;
 
     for (int n = 0; n < quantityOfElements; n++) {
         sumAverage += *(initOfMemory + n);
+        sumEnergy += ((*(initOfMemory+n))* (*(initOfMemory+n)));
         if (*(initOfMemory + n) < tempmin) {tempmin = *(initOfMemory+n);}
         if (*(initOfMemory + n) > tempmax) {tempmax = *(initOfMemory+n);}
     }
     average = sumAverage / quantityOfElements;
-    totalEnergy = (sumAverage * sumAverage);
+    totalEnergy = sumEnergy;
     maximum = tempmax;
     if(tempmin <= tempmax) {minimum = tempmin;}
 

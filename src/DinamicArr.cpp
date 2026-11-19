@@ -47,6 +47,8 @@ double* DinamicArr::getAllElements () {
 };
 
 DinamicArr DinamicArr::operator=(const DinamicArr &other){
-    setElementsInRow(other.nativeArray, other.numberOfElements);
+    if(sizeof(*this) == sizeof(other)) {
+        setElementsInRow(other.nativeArray, other.numberOfElements);
+    }
     return *this;
 }
