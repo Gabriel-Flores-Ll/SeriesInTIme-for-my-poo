@@ -37,6 +37,9 @@ void ChannelSignal::updateInternalStadistics(std::string selectionOfArr) {
 double ChannelSignal::getRawElement (int index) {return rawSamples.getElement(index);}
 double ChannelSignal::getProcesedElement(int index){return processedSamples.getElement(index);}
 
+int ChannelSignal::getNumberOfSamples() {return totalOfSamples;}
+double ChannelSignal::getSamplingRate() {return nativeMetaData.getSamplingRate();}
+
 bool ChannelSignal::setRawElement(double providedElement, int indexProvided) {return rawSamples.setElement(providedElement, indexProvided);dirtyFlag = false;};
 bool ChannelSignal::setPracessedElement(double providedElement, int indexProvided){return processedSamples.setElement(providedElement, indexProvided);dirtyFlag = false;}
 

@@ -59,6 +59,9 @@ class ChannelSignal {
         double getRawElement (int index);
         double getProcesedElement(int index);
 
+        int getNumberOfSamples();
+        double getSamplingRate();
+
         /**
         * @brief set an element in raw/processed in the respective array and set the dirty flag to false
         */

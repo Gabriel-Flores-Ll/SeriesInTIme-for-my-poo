@@ -1,7 +1,7 @@
 #ifndef SLICING_WINDOW_H
 #define SLICING_WINDOW_H
 
-class ChannelSignal;
+#include "ChannelSignal.h"
 
 /**
 * @class SlicingWindow 
@@ -14,6 +14,7 @@ class ChannelSignal;
 class SlicingWindow {
     private:
         ChannelSignal * const channelAsocied;
+        int const lengthOfTheChannel; 
         int initIndex;
         int windowLenght;
         int stride;
@@ -58,10 +59,10 @@ class SlicingWindow {
         * @brief Delegates the funcions of the calculus of the stadistics in the window to the channel funcions
         * @return the results of the calculus of stadistics that the channel provides, and passes it to the caller
         */
-        double maxWindow();
-        double minWindow();
-        double energyWindow();
-        double averageWindow();
+        double maxWindow(std::string selectionOfArr);
+        double minWindow(std::string selectionOfArr);
+        double energyWindow(std::string selectionOfArr);
+        double averageWindow(std::string selectionOfArr);
 };
 
 #endif 
