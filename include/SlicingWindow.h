@@ -25,6 +25,43 @@ class SlicingWindow {
         * @param strideProvided its the number of steps that the window will move in each stride 
         */
         SlicingWindow(ChannelSignal* channelProvided, int windowLenghtProvided, int strideProvided);
+
+        /**
+        * @brief Resets the init index of the slicing window to the inicial position
+        */
+        void resetInitIndex();
+
+        /**
+        * @brief Sets the index to a determinate position to inspect
+        * @param indexProvided the index provided to set position
+        */
+        void setInitIndex(int indexProvided);
+
+        /**
+        * @brief Advances a strice to continue with the revition of the array, it need to comprove the invariants, specially not overpass the total cuantity of the samples in the channel
+        */
+        void strideForward();
+
+        /**
+        * @brief Comproves if the window reaches the border of the array, adding the leght and the actual index
+        * @return a bool of the state of the window, if reaches(True) in other case (False)
+        */
+        bool itsInTheBorder();
+
+        /**
+        * @brief it calcs the window in secs with the frecuency of the samples
+        * @return The final calc in seconds of the window
+        */
+        double calcWindowInSecs ();
+
+        /** 
+        * @brief Delegates the funcions of the calculus of the stadistics in the window to the channel funcions
+        * @return the results of the calculus of stadistics that the channel provides, and passes it to the caller
+        */
+        double maxWindow();
+        double minWindow();
+        double energyWindow();
+        double averageWindow();
 };
 
 #endif 
