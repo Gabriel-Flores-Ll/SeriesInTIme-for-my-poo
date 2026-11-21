@@ -1,48 +1,89 @@
 #include "ChannelStadistics.h"
+#include <cmath>
 
-ChannelStadistics::ChannelStadistics(double* initOfMemory, int quantityOfElements) {updateStadistics(initOfMemory, quantityOfElements);}
+ChannelStadistics::ChannelStadistics()
+    : average(0.0),
+      variation(0.0),
+      standardDesviation(0.0),
+      minimum(0.0),
+      maximum(0.0),
+      totalEnergy(0.0) {}
 
-ChannelStadistics::ChannelStadistics() {
-    average = 0;
-    variation = 0;
-    standardDesviation = 0;  
-    minimum = 0;
-    maximum = 0;
-    totalEnergy = 0;
+ChannelStadistics::ChannelStadistics(const double* initOfMemory, int quantityOfElements)
+    : average(0.0),
+      variation(0.0),
+      standardDesviation(0.0),
+      minimum(0.0),
+      maximum(0.0),
+      totalEnergy(0.0) {
+    updateStadistics(initOfMemory, quantityOfElements);
 }
 
-bool ChannelStadistics::updateStadistics(double* initOfMemory, int quantityOfElements) {
-    double sumAverage = 0;
-    double sumEnergy = 0;
-    double tempmax = *initOfMemory;
-    double tempmin = *initOfMemory;
-
-    for (int n = 0; n < quantityOfElements; n++) {
-        sumAverage += *(initOfMemory + n);
-        sumEnergy += ((*(initOfMemory+n))* (*(initOfMemory+n)));
-        if (*(initOfMemory + n) < tempmin) {tempmin = *(initOfMemory+n);}
-        if (*(initOfMemory + n) > tempmax) {tempmax = *(initOfMemory+n);}
+bool ChannelStadistics::updateStadistics(const double* initOfMemory, int quantityOfElements) {
+    if (initOfMemory == nullptr || quantityOfElements <= 0) {
+        return false;
     }
-    average = sumAverage / quantityOfElements;
-    totalEnergy = sumEnergy;
-    maximum = tempmax;
-    if(tempmin <= tempmax) {minimum = tempmin;}
 
-    if (quantityOfElements == 1) { variation = 0.0; standardDesviation = 0.0;} 
-    else {
-        double sumVariance;
-        for(int n = 0; n < quantityOfElements; n++) {
-            sumVariance += ((*(initOfMemory + n) - average) * (*(initOfMemory + n) - average));
+    // Pass 1: mean, total energy, minimum, and maximum
+    double sumAverage = 0.0;
+    double sumEnergy = 0.0;
+    double tempMin = *initOfMemory;
+    double tempMax = *initOfMemory;
+
+    for (int n = 0; n < quantityOfElements; ++n) {
+        double value = *(initOfMemory + n);
+        sumAverage += value;
+        sumEnergy += value * value;
+        if (value < tempMin) {
+            tempMin = value;
         }
-        variation = sumVariance / (quantityOfElements - 1);
-        standardDesviation = variation / variation;
+        if (value > tempMax) {
+            tempMax = value;
+        }
     }
+
+    average = sumAverage / static_cast<double>(quantityOfElements);
+    totalEnergy = sumEnergy;
+    minimum = tempMin;
+    maximum = tempMax;
+
+    // Pass 2: Bessel-corrected sample variance and standard deviation
+    if (quantityOfElements == 1) {
+        variation = 0.0;
+        standardDesviation = 0.0;
+    } else {
+        double sumVariance = 0.0;
+        for (int n = 0; n < quantityOfElements; ++n) {
+            double diff = *(initOfMemory + n) - average;
+            sumVariance += diff * diff;
+        }
+        variation = sumVariance / static_cast<double>(quantityOfElements - 1);
+        standardDesviation = std::sqrt(variation);
+    }
+
     return true;
 }
 
-double ChannelStadistics::getAverage() {return average;};
-double ChannelStadistics::getVariation() {return variation;};
-double ChannelStadistics::getStandardDesviation() {return standardDesviation;}
-double ChannelStadistics::getMinimum() {return minimum;};
-double ChannelStadistics::getMaximum() {return maximum;};
-double ChannelStadistics::getTotalEnergy() {return totalEnergy;};
+double ChannelStadistics::getAverage() const {
+    return average;
+}
+
+double ChannelStadistics::getVariation() const {
+    return variation;
+}
+
+double ChannelStadistics::getStandardDesviation() const {
+    return standardDesviation;
+}
+
+double ChannelStadistics::getMinimum() const {
+    return minimum;
+}
+
+double ChannelStadistics::getMaximum() const {
+    return maximum;
+}
+
+double ChannelStadistics::getTotalEnergy() const {
+    return totalEnergy;
+}

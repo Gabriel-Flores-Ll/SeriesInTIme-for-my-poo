@@ -3,75 +3,74 @@
 
 #include <string>
 
-
-/** 
-* @class MetadataSensor
-* @brief It contains the data of the sensor like: code of the channel, 
-* @invariant codeOfChannel != ""   
-* @invariant unitOfMeasure != ""
-* @invariant SamplingRate > 0.0
-*/
+/**
+ * @class MetadataSensor
+ * @brief Stores acquisition metadata of a signal channel (identifier, unit, and sampling rate).
+ * @invariant codeOfChannel is non-empty and contains no whitespace characters.
+ * @invariant unitOfMeasure is non-empty and contains no whitespace characters.
+ * @invariant samplingRate > 0.0 (expressed in Hz).
+ */
 class MetadataSensor {
-    private:
-        std::string codeOfChannel;
-        std::string unitOfMeasure;
-        double samplingRate;
+private:
+    std::string codeOfChannel;
+    std::string unitOfMeasure;
+    double samplingRate;
 
-        /** 
-        * @brief Comprove if a string have a certain contuinity of char in a row, also checks it to have no spaces
-        * @param givenSTR string provided by reference to check the continuty of it
-        * @param requiredContinuity indicates the required continuty, for example 2, that indicates the minimum chars that the string must have
-        * @return indicates if the string have all the requirements specified
-        */
-        bool isAContinousSTR(std::string &givenSTR, int requiredContinuity) const;
-    public:
-        /** 
-        * @brief constructor of the MetadataSensor
-        * @param givenCode string of the code of the channel provided, it must not be empty
-        * @param givenUnit string thatindicates unit of measure, (micro volts or somthing), must be not empty
-        * @param givenSR double that indicates the frecuency of the samples, it is given allways in Hz, SR(sampling rate), must be a valour more than 0
-        */
-        MetadataSensor(std::string givenCode, std::string givenUnit, double givenSR);
+    /**
+     * @brief Validates that a string has no whitespace and meets a minimum character length.
+     * @param givenSTR String to validate (passed by const reference).
+     * @param requiredContinuity Minimum number of non-whitespace characters required (>= 1).
+     * @return true if the string contains no whitespace and its length >= requiredContinuity; false otherwise.
+     */
+    bool isAContinousSTR(const std::string& givenSTR, int requiredContinuity) const;
 
-        /**
-        * @brief This funtion change the name of the channel, changing the code
-        * @param givenCode this is the code that will be the new for the channel must be diferrent from an empty code, at least 1 char code in a row
-        * @return will return a bool to indicate if the code was changed
-        */
-        bool setCodeOfChannel (std::string givenCode);
-        
-        /**
-        * @brief this funtion set the unit of measure of the sensor, in the case that it need to be changed
-        * @param givenUnit this is the unit in that the measures were taken, it could be anything for now, just it need to be different from empty and have at least 2 char in a row
-        * @return will return a bool to indicate if the unit was changed
-        */
-        bool setUnitOfMeasure (std::string givenUnit);
+public:
+    /**
+     * @brief Constructs a valid MetadataSensor, falling back to safe defaults if any parameter violates invariants.
+     * @param givenCode Non-empty channel code without spaces (fallback: "UNKNOWN").
+     * @param givenUnit Non-empty physical unit without spaces (fallback: "uV").
+     * @param givenSR Sampling rate in Hz; must be strictly > 0.0 (fallback: 1.0).
+     */
+    MetadataSensor(const std::string& givenCode, const std::string& givenUnit, double givenSR);
 
-        /**
-        * @brief Set the sampling rate of the measures
-        * @param givenSR given sampling rate of the measures, it must be in Hz, also must be different from 0.0
-        * @return will return a bool to indicate if the sampling rate was changed
-    
-        */
-        bool setSamplingRate (double givenSR); 
+    /**
+     * @brief Updates the channel code if valid; otherwise preserves the previous value.
+     * @param givenCode Candidate channel code (non-empty, no spaces).
+     * @return true if updated, false if rejected.
+     */
+    bool setCodeOfChannel(const std::string& givenCode);
 
-        std::string getCodeOfChanne();
-        std::string getUnitOfMeasure();
-        double getSamplingRate();
+    /**
+     * @brief Updates the physical unit of measure if valid; otherwise preserves the previous value.
+     * @param givenUnit Candidate unit string (non-empty, no spaces).
+     * @return true if updated, false if rejected.
+     */
+    bool setUnitOfMeasure(const std::string& givenUnit);
 
-        /**
-        * @brief recives a exact sec in the time in order to convert it to the exact index of the element that correspond to that sec
-        * @param givenSecond recives a second in a double, it musk be more than 0.0 to be correct
-        * @return the corresponding index that mach to the sample in the second provided
-        */
-        int ConvertIndexSecs (double givenSecond) const;
+    /**
+     * @brief Updates the sampling rate if strictly positive; otherwise preserves the previous value.
+     * @param givenSR Candidate sampling rate in Hz (> 0.0).
+     * @return true if updated, false if rejected.
+     */
+    bool setSamplingRate(double givenSR);
 
-        /**
-        * @brief recives an Index of a sample in order to convert it to the exact second of meassurement of that sample
-        * @param givenIndex the index of a sample
-        * @return the corresponding second of measurement of the sample that mach to the index provided
-        */
-        double ConvertIndexSecs (int givenIndex) const;
-    };
+    const std::string& getCodeOfChannel() const;
+    const std::string& getUnitOfMeasure() const;
+    double getSamplingRate() const;
 
-#endif 
+    /**
+     * @brief Converts a timestamp in seconds to its corresponding sample index.
+     * @param givenSecond Time offset in seconds (>= 0.0; negative values are clamped to 0).
+     * @return Non-negative sample index floor(samplingRate * givenSecond).
+     */
+    int ConvertIndexSecs(double givenSecond) const;
+
+    /**
+     * @brief Converts a sample index to its corresponding timestamp in seconds.
+     * @param givenIndex Sample index (>= 0; negative values return 0.0).
+     * @return Timestamp in seconds (givenIndex / samplingRate).
+     */
+    double ConvertIndexSecs(int givenIndex) const;
+};
+
+#endif

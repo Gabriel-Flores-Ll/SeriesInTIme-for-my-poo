@@ -1,54 +1,93 @@
 #include "DinamicArr.h"
+#include <limits>
 
-DinamicArr::DinamicArr(int ProvidedNumOfElements) {
-    numberOfElements = ProvidedNumOfElements;
-    nativeArray = new double[ProvidedNumOfElements];
+DinamicArr::DinamicArr()
+    : numberOfElements(0),
+      nativeArray(nullptr) {}
+
+DinamicArr::DinamicArr(int providedNumOfElements)
+    : numberOfElements(0),
+      nativeArray(nullptr) {
+    if (providedNumOfElements > 0) {
+        nativeArray = new double[providedNumOfElements]{};
+        numberOfElements = providedNumOfElements;
+    }
 }
 
-DinamicArr::DinamicArr(double* rowOfElements, int providedNumberOfElements) {
+DinamicArr::DinamicArr(const double* rowOfElements, int providedNumberOfElements)
+    : numberOfElements(0),
+      nativeArray(nullptr) {
     setElementsInRow(rowOfElements, providedNumberOfElements);
 }
 
-DinamicArr::DinamicArr(const DinamicArr &other) {
-    *this = other;
+DinamicArr::DinamicArr(const DinamicArr& other)
+    : numberOfElements(0),
+      nativeArray(nullptr) {
+    if (other.nativeArray != nullptr && other.numberOfElements > 0) {
+        setElementsInRow(other.nativeArray, other.numberOfElements);
+    }
 }
 
-DinamicArr::DinamicArr(){
-    numberOfElements = 0;
+DinamicArr::~DinamicArr() {
+    delete[] nativeArray;
     nativeArray = nullptr;
+    numberOfElements = 0;
 }
 
-DinamicArr::~DinamicArr() {delete [] nativeArray;};
-
-bool DinamicArr::setElement(double elementProvided, int indexProvided) { 
-    if (indexProvided < numberOfElements) {*(nativeArray + indexProvided) = elementProvided;return true;} 
-    return false;
+DinamicArr& DinamicArr::operator=(const DinamicArr& other) {
+    if (this != &other) {
+        if (other.nativeArray != nullptr && other.numberOfElements > 0) {
+            double* newBlock = new double[other.numberOfElements];
+            for (int i = 0; i < other.numberOfElements; ++i) {
+                *(newBlock + i) = *(other.nativeArray + i);
+            }
+            delete[] nativeArray;
+            nativeArray = newBlock;
+            numberOfElements = other.numberOfElements;
+        } else {
+            delete[] nativeArray;
+            nativeArray = nullptr;
+            numberOfElements = 0;
+        }
+    }
+    return *this;
 }
 
-bool DinamicArr::setElementsInRow ( double* rowOfElements, int providedNumberOfElements){
-    if (numberOfElements > 0) {
-        delete [] nativeArray;
-        numberOfElements = providedNumberOfElements;
-        nativeArray = new double[numberOfElements];
-        for (int i = 0; i < numberOfElements; i++) {*(nativeArray + i) = *(rowOfElements + 1);}
+bool DinamicArr::setElement(double elementProvided, int indexProvided) {
+    if (nativeArray != nullptr && indexProvided >= 0 && indexProvided < numberOfElements) {
+        *(nativeArray + indexProvided) = elementProvided;
         return true;
     }
     return false;
 }
 
-int DinamicArr::getNumberOfElements() {return numberOfElements;};
-
-double DinamicArr::getElement (int index) {if (index < numberOfElements){return *(nativeArray + index);}else{return -1;}};
-
-double* DinamicArr::getAllElements () {
-    double *tempArr = new double[numberOfElements];
-    for (int i = 0; i < numberOfElements; i++) {*(tempArr + i) = *(nativeArray + 1);}
-    return tempArr;
-};
-
-DinamicArr DinamicArr::operator=(const DinamicArr &other){
-    if(sizeof(*this) == sizeof(other)) {
-        setElementsInRow(other.nativeArray, other.numberOfElements);
+bool DinamicArr::setElementsInRow(const double* rowOfElements, int providedNumberOfElements) {
+    if (rowOfElements == nullptr || providedNumberOfElements <= 0) {
+        return false;
     }
-    return *this;
+
+    double* newBlock = new double[providedNumberOfElements];
+    for (int i = 0; i < providedNumberOfElements; ++i) {
+        *(newBlock + i) = *(rowOfElements + i);
+    }
+
+    delete[] nativeArray;
+    nativeArray = newBlock;
+    numberOfElements = providedNumberOfElements;
+    return true;
+}
+
+int DinamicArr::getNumberOfElements() const {
+    return numberOfElements;
+}
+
+double DinamicArr::getElement(int index) const {
+    if (nativeArray != nullptr && index >= 0 && index < numberOfElements) {
+        return *(nativeArray + index);
+    }
+    return std::numeric_limits<double>::quiet_NaN();
+}
+
+const double* DinamicArr::getData() const {
+    return nativeArray;
 }

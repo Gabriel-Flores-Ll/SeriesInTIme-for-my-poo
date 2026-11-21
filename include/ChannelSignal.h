@@ -1,90 +1,108 @@
 #ifndef CHANNEL_SIGNAL_H
 #define CHANNEL_SIGNAL_H
 
-#include<string>
+#include <string>
 
 #include "DinamicArr.h"
 #include "MetadataSensor.h"
 #include "ChannelStadistics.h"
 
 /**
-* @class ChannelSignal
-* @brief Manage the classes channelStadistics and MetadataSensor and two dinamic arrays (with raw and processed samples) in order to model a Signal of a channel, and its stadistics and data of this
-* @invariant lenght of the samples (N) must be more than 2, this to have a defined variance
-* @invariant the two pointers must be pointing to a valid block of memory of lenght N
-* @invariant allways when the elements of the array or the entire array is changed dirtyFlag will indicate it
-*/
+ * @class ChannelSignal
+ * @brief Models a single time-series signal channel composing metadata, baseline statistics,
+ *        an immutable raw sample buffer, and a mutable processed sample buffer (Rule of Zero via DinamicArr).
+ * @invariant totalOfSamples >= 2 (guarantees well-defined Bessel variance).
+ * @invariant rawSamples.getNumberOfElements() == totalOfSamples and processedSamples.getNumberOfElements() == totalOfSamples.
+ * @invariant rawSamples remains immutable after construction so restoreProcessedSamples() can always revert filters.
+ * @invariant statsDirty is true whenever processedSamples has changed since the last statistics recomputation.
+ */
 class ChannelSignal {
-    private:
-        MetadataSensor nativeMetaData;
-        ChannelStadistics nativeStadistics;
-        DinamicArr rawSamples;
-        DinamicArr processedSamples;
-        int totalOfSamples;
-        bool dirtyFlag;
-    public:
-        /**
-        * @brief Parameter constructor of the class, copy all the necesary valours into the class and sets all the operations that are needed to make a valid object and sets the dirtyFlag to true
-        * @param givenCode string of the code of the channel provided, it must not be empty
-        * @param givenUnit string thatindicates unit of measure, (micro volts or somthing), must be not empty
-        * @param givenSR double that indicates the frecuency of the samples, it is given allways in Hz, SR(sampling rate), must be a valour more than 0
-        * @param inicialData recives the incial Data of streams to iniciate the native arrays
-        * @param ProvidedNumOfElements its the number of elements that are in the incial Data
-        */
-        ChannelSignal(std::string givenCode, std::string givenUnit, double givenSR, double* inicialData, int ProvidedNumOfElements);
+private:
+    MetadataSensor nativeMetaData;
+    mutable ChannelStadistics nativeStadistics;
+    DinamicArr rawSamples;
+    DinamicArr processedSamples;
+    int totalOfSamples;
+    mutable bool statsDirty;
 
-        /**
-        * @brief the constructor by copy of the class, relied in the overcharge of =
-        * @param other anotherSignal by reference
-        */
-        ChannelSignal(const ChannelSignal &other);
-        
-        /**
-        * @brief The overcharge of the operator = to make a deep copy of the object
-        * @param other another ChannelSignal by reference
-        * @return A ChannelSignal that is a deep copy 
-        */
-        ChannelSignal operator=(const ChannelSignal &other);    
+    /**
+     * @brief Selects the internal buffer matching "raw" or "processed".
+     * @return Const pointer to the selected DinamicArr, or nullptr if selectionOfArr is invalid.
+     */
+    const DinamicArr* selectBuffer(const std::string& selectionOfArr) const;
 
-        /**
-        * @brief Evoques the method of the subclass ChannelStadistics to update the stadistics and set to true the dirtyFlag
-        */
-        void updateInternalStadistics(std::string selectionOfArr);
+    /**
+     * @brief Validates that [initOfRange, initOfRange + numberOfElements) lies completely within [0, totalOfSamples).
+     */
+    bool isValidSubRange(int initOfRange, int numberOfElements) const;
 
-        /**
-        * @brief Brought the element of the raw/Processed solicited by valour, reliing in the methods of the arrays
-        * @param index Its the index of the element that its beeing solicited
-        * @return A double that is the element solicited
-        */
-        double getRawElement (int index);
-        double getProcesedElement(int index);
+public:
+    /**
+     * @brief Constructs a valid ChannelSignal with deep-copied raw and processed buffers.
+     * @param givenCode Non-empty channel identifier without spaces.
+     * @param givenUnit Non-empty unit of measure without spaces.
+     * @param givenSR Sampling rate in Hz (> 0.0).
+     * @param inicialData Pointer to initial sample values (non-null).
+     * @param providedNumOfElements Number of samples (>= 2). If invalid, initializes a safe 2-sample zero signal.
+     */
+    ChannelSignal(const std::string& givenCode,
+                  const std::string& givenUnit,
+                  double givenSR,
+                  const double* inicialData,
+                  int providedNumOfElements);
 
-        int getNumberOfSamples();
-        double getSamplingRate();
+    /**
+     * @brief Returns baseline statistics synchronized with the latest processedSamples state (lazy evaluation).
+     * @return Const reference to the composed ChannelStadistics object (zero heap allocation).
+     */
+    const ChannelStadistics& getProcessedStatistics() const;
 
-        /**
-        * @brief set an element in raw/processed in the respective array and set the dirty flag to false
-        */
-        bool setRawElement(double providedElement, int indexProvided);
-        bool setPracessedElement(double providedElement, int indexProvided);
+    /**
+     * @brief Provides read-only access to the sensor metadata.
+     */
+    const MetadataSensor& getMetadata() const;
 
-        /**
-        * @brief Restores the array of the processed samples with the raw ones, this by making a copy
-        */
-        bool restoreProcessedSamples();
+    /**
+     * @brief Retrieves a sample from the immutable raw buffer.
+     * @param index Position in [0, totalOfSamples).
+     * @return Sample value, or quiet_NaN() if out of bounds.
+     */
+    double getRawElement(int index) const;
 
-        /**
-        * @brief Process all the metrics on a sub-range working in the array of selection
-        * @param initOfRange indicates the inicial index of the range
-        * @param endOfRange indicates the ending index of the range
-        * @param selectionOfArr selects beethwin the two arrays raw and processed to do the calculus of the metrics 
-        * @return the final calculus of the metrics
-        */
-        double subRangeAverage(int initOfRange, int numberOfElements, std::string selectionOfArr);  
-        double subRangeminimum(int initOfRange, int numberOfElements, std::string selectionOfArr);
-        double subRangemaximum(int initOfRange, int numberOfElements, std::string selectionOfArr);
-        double subRangeEnergy(int initOfRange, int numberOfElements, std::string selectionOfArr);
+    /**
+     * @brief Retrieves a sample from the processed buffer.
+     * @param index Position in [0, totalOfSamples).
+     * @return Sample value, or quiet_NaN() if out of bounds.
+     */
+    double getProcessedElement(int index) const;
+
+    int getNumberOfSamples() const;
+    double getSamplingRate() const;
+
+    /**
+     * @brief Modifies a sample in processedSamples and marks cached statistics as dirty only if the write succeeds.
+     * @param providedElement New processed value.
+     * @param indexProvided Position in [0, totalOfSamples).
+     * @return true if updated, false if index was out of bounds.
+     */
+    bool setProcessedElement(double providedElement, int indexProvided);
+
+    /**
+     * @brief Restores processedSamples to an exact deep copy of rawSamples and invalidates cached statistics.
+     */
+    void restoreProcessedSamples();
+
+    /**
+     * @brief Computes statistical metrics over a contiguous sub-range [initOfRange, initOfRange + numberOfElements).
+     * @param initOfRange Starting sample index (>= 0).
+     * @param numberOfElements Number of samples in the sub-range (> 0).
+     * @param selectionOfArr Buffer selector: "raw" or "processed".
+     * @return Computed metric, or quiet_NaN() if range or buffer selector is invalid.
+     */
+    double subRangeAverage(int initOfRange, int numberOfElements, const std::string& selectionOfArr) const;
+    double subRangeMinimum(int initOfRange, int numberOfElements, const std::string& selectionOfArr) const;
+    double subRangeMaximum(int initOfRange, int numberOfElements, const std::string& selectionOfArr) const;
+    double subRangeEnergy(int initOfRange, int numberOfElements, const std::string& selectionOfArr) const;
 };
-
 
 #endif

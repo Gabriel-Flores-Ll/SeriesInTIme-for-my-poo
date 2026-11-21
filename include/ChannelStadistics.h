@@ -1,49 +1,50 @@
 #ifndef CHANNEL_STADISTICS_H
 #define CHANNEL_STADISTICS_H
 
-/** 
-* @class ChannelStadistics
-* @brief It contains the stadistics of the channel associated, in order to have operations and stats about the data that is beeing analized.
-* @invariant variation must be >= 0.0 , if the analized part have lenght = 1 it need to be defined explicitly to 0, to avoid divitions on zero
-* @invariant standardDesviation variation must be >= 0.0, if the analized part have lenght = 1 it need to be defined explicitly to 0, to avoid divitions on zero
-* @invariant minimum allways <= to maximun
-* @invariant totalEnergy must be >= 0.0
-*/
+/**
+ * @class ChannelStadistics
+ * @brief Computes and stores stationary baseline statistics of a signal channel using a numerically stable two-pass algorithm.
+ * @invariant variation >= 0.0 (explicitly 0.0 when N == 1).
+ * @invariant standardDesviation >= 0.0 (sqrt(variation)).
+ * @invariant minimum <= maximum.
+ * @invariant totalEnergy >= 0.0.
+ */
 class ChannelStadistics {
-    private:
-        double average;
-        double variation;
-        double standardDesviation;  
-        double minimum;
-        double maximum;
-        double totalEnergy;
-    public:
-        /** 
-        * @brief constructor of the ChannelStadistics class, it will call the method updateStadistics in order to construct the first iteration of stadistics of the class
-        * @param initOfMemory a pointer/direction of memory of the inicial element of the block of memory of the channel data
-        * @param quantityOfElements indicates the number of elements that the channel posses
-        */
-        ChannelStadistics (double* initOfMemory, int quantityOfElements);
-        
-        /** 
-        * @brief default constructor of the class, it sets all the valours to 0 and wait until the updateStadistics methotd to be run manually 
-        */
-        ChannelStadistics();
+private:
+    double average;
+    double variation;
+    double standardDesviation;
+    double minimum;
+    double maximum;
+    double totalEnergy;
 
-        /**
-        * @brief it will calculate the new stadistics of the channel with the provided block of memory and the quantity of elements, it will actualize all the class variables
-        * @param initOfMemory a pointer/direction of memory of the inicial element of the block of memory of the channel data
-        * @param quantityOfElements indicates the number of elements that the channel posses
-        * @return A bool that indicates if the asignation and calculus of the valours was succesful
-        */
-        bool updateStadistics(double* initOfMemory, int quantityOfElements);
+public:
+    /**
+     * @brief Default constructor initializing all statistical metrics to 0.0.
+     */
+    ChannelStadistics();
 
-        double getAverage();
-        double getVariation();
-        double getStandardDesviation();
-        double getMinimum();
-        double getMaximum();
-        double getTotalEnergy();
+    /**
+     * @brief Parameterized constructor initializing metrics to 0.0 and immediately computing baseline statistics.
+     * @param initOfMemory Read-only pointer to the first sample in memory.
+     * @param quantityOfElements Number of samples (> 0). If invalid, metrics remain safely at 0.0.
+     */
+    ChannelStadistics(const double* initOfMemory, int quantityOfElements);
+
+    /**
+     * @brief Recomputes all baseline statistics in two passes using pointer arithmetic.
+     * @param initOfMemory Read-only pointer to the first sample (must be non-null).
+     * @param quantityOfElements Number of samples (must be > 0).
+     * @return true if computation succeeded, false if arguments were invalid (previous state preserved).
+     */
+    bool updateStadistics(const double* initOfMemory, int quantityOfElements);
+
+    double getAverage() const;
+    double getVariation() const;
+    double getStandardDesviation() const;
+    double getMinimum() const;
+    double getMaximum() const;
+    double getTotalEnergy() const;
 };
 
 #endif
