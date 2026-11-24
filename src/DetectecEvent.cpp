@@ -5,7 +5,7 @@
 
 namespace {
 constexpr double kValueTolerance = 1e-9;
-}  // namespace
+}
 
 DetectedEvent::DetectedEvent(const std::string& givenCode,
                              const std::string& givenUnit,
@@ -97,9 +97,10 @@ bool DetectedEvent::operator<(const DetectedEvent& other) const {
 
 bool DetectedEvent::operator==(const DetectedEvent& other) const {
     return getType() == other.getType() &&
-           codeOfChannel == other.codeOfChannel &&
-           initIndex == other.initIndex &&
-           endIndex == other.endIndex &&
+           getCodeOfChannel() == other.getCodeOfChannel() &&
+           getInitIndex() == other.getInitIndex() &&
+           getEndIndex() == other.getEndIndex() &&
+           std::fabs(getSeverity() - other.getSeverity()) < kValueTolerance &&
            std::fabs(getCharacteristicValue() - other.getCharacteristicValue()) < kValueTolerance;
 }
 
