@@ -496,8 +496,12 @@ int main(int argc, char* argv[]) {
                 return (ran > 0) ? 0 : 1;
             }
             if (arg == "--benchmark-mit") {
-                const MitBihBenchmarkResult r = BenchmarkSuite::runMitBihBenchmark(
-                    "data/mitbih_100_10s.csv", "data/mitbih_100_10s_annotations.csv", std::cout);
+                const std::string sigPath =
+                    (argc >= 3) ? std::string(argv[2]) : "data/mitbih_100_10s.csv";
+                const std::string annPath =
+                    (argc >= 4) ? std::string(argv[3]) : "data/mitbih_100_10s_annotations.csv";
+                const MitBihBenchmarkResult r =
+                    BenchmarkSuite::runMitBihBenchmark(sigPath, annPath, std::cout);
                 return r.executed ? 0 : 1;
             }
             if (arg == "--benchmark-uci") {

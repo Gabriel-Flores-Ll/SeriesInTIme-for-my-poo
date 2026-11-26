@@ -1,2 +1,9 @@
 build/*.o
 build/*.exe
+
+# Datasets pesados, reportes y paquetes temporales
+reports/
+data/bonn/
+data/mitbih_100_full*.csv
+data/uci_eeg_eyestate_full.csv
+*.zip
