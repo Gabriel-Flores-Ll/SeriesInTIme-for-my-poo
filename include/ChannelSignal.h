@@ -7,6 +7,9 @@
 #include "MetadataSensor.h"
 #include "ChannelStadistics.h"
 
+class ProcessingModule;
+class ProcessingPipeline;
+
 /**
  * @class ChannelSignal
  * @brief Models a single time-series signal channel composing metadata, baseline statistics,
@@ -91,6 +94,24 @@ public:
      * @brief Restores processedSamples to an exact deep copy of rawSamples and invalidates cached statistics.
      */
     void restoreProcessedSamples();
+
+    /**
+     * @brief Resets module, traverses the selected buffer using pointer arithmetic, writes filtered samples
+     *        into processedSamples (leaving rawSamples intact), and marks cached statistics as dirty.
+     * @param module Polymorphic processing module applied to each sample.
+     * @param sourceBuffer Source buffer selector: "processed" (default, allows chaining) or "raw".
+     * @return true if applied, false if sourceBuffer is invalid (signal left unchanged).
+     */
+    bool applyModule(ProcessingModule& module, const std::string& sourceBuffer = "processed");
+
+    /**
+     * @brief Resets pipeline, traverses the selected buffer using pointer arithmetic, writes filtered samples
+     *        into processedSamples (leaving rawSamples intact), and marks cached statistics as dirty.
+     * @param pipeline Polymorphic processing pipeline applied in cascade to each sample.
+     * @param sourceBuffer Source buffer selector: "processed" (default) or "raw".
+     * @return true if applied, false if sourceBuffer is invalid (signal left unchanged).
+     */
+    bool applyPipeline(ProcessingPipeline& pipeline, const std::string& sourceBuffer = "processed");
 
     /**
      * @brief Computes statistical metrics over a contiguous sub-range [initOfRange, initOfRange + numberOfElements).

@@ -1,4 +1,8 @@
 #include "ChannelSignal.h"
+
+#include "ProcessingModule.h"
+#include "ProcessingPipeline.h"
+
 #include <limits>
 
 ChannelSignal::ChannelSignal(const std::string& givenCode,
@@ -82,6 +86,67 @@ bool ChannelSignal::setProcessedElement(double providedElement, int indexProvide
 void ChannelSignal::restoreProcessedSamples() {
     processedSamples = rawSamples;
     statsDirty = true;
+}
+
+bool ChannelSignal::applyModule(ProcessingModule& module, const std::string& sourceBuffer) {
+    const DinamicArr* source = selectBuffer(sourceBuffer);
+    if (source == nullptr) {
+        return false;
+    }
+
+    module.reset();
+
+    const double* srcData = source->getData();
+    double* filtered = new double[totalOfSamples];
+    try {
+        const double* srcEnd = srcData + totalOfSamples;
+        double* dst = filtered;
+        for (const double* src = srcData; src < srcEnd; ++src, ++dst) {
+            *dst = module.processSample(*src);
+        }
+        processedSamples.setElementsInRow(filtered, totalOfSamples);
+    } catch (...) {
+        delete[] filtered;
+        throw;
+    }
+    delete[] filtered;
+
+    statsDirty = true;
+    return true;
+}
+
+bool ChannelSignal::applyPipeline(ProcessingPipeline& pipeline, const std::string& sourceBuffer) {
+    const DinamicArr* source = selectBuffer(sourceBuffer);
+    if (source == nullptr) {
+        return false;
+    }
+
+    pipeline.reset();
+
+    if (pipeline.isEmpty()) {
+        if (sourceBuffer == "raw") {
+            restoreProcessedSamples();
+        }
+        return true;
+    }
+
+    const double* srcData = source->getData();
+    double* filtered = new double[totalOfSamples];
+    try {
+        const double* srcEnd = srcData + totalOfSamples;
+        double* dst = filtered;
+        for (const double* src = srcData; src < srcEnd; ++src, ++dst) {
+            *dst = pipeline.processSample(*src);
+        }
+        processedSamples.setElementsInRow(filtered, totalOfSamples);
+    } catch (...) {
+        delete[] filtered;
+        throw;
+    }
+    delete[] filtered;
+
+    statsDirty = true;
+    return true;
 }
 
 double ChannelSignal::subRangeAverage(int initOfRange,
