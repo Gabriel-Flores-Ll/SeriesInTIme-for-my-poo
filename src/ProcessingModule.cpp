@@ -1,13 +1,10 @@
 #include "ProcessingModule.h"
 
-ProcessingModule::ProcessingModule(const std::string& givenName, bool givenState)
-    : nameOfModule(givenName.empty() ? "SinNombre" : givenName),
-      isActive(givenState) {}
+ProcessingModule::ProcessingModule(const std::string& givenName)
+    : name(givenName.empty() ? "Unnamed" : givenName), active(true) {}
 
 ProcessingModule::~ProcessingModule() {}
 
-const std::string& ProcessingModule::getNombre() const {return nameOfModule;}
-
-bool ProcessingModule::isActiveModule() const {return isActive;}
-
-void ProcessingModule::setActive(bool state) {isActive = state;}
+const std::string& ProcessingModule::getName() const {return name;}
+bool ProcessingModule::isActive() const {return active;}
+void ProcessingModule::setActive(bool givenState) {active = givenState;}

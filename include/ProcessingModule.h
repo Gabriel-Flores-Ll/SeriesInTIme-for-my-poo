@@ -1,4 +1,3 @@
-
 #ifndef PROCESSING_MODULE_H
 #define PROCESSING_MODULE_H
 
@@ -6,58 +5,68 @@
 
 /**
 * @class ProcessingModule
-* @brief Abstract base class for processing module.
-* @invariant nameOfModule must be a non-empty standard string.
-* @invariant isActive must indicate whether the module is active or inactive.
+* @brief Abstract base class (Level 0) of the whole processing hierarchy. It defines the contract that every
+*        module must fulfil: process a sample, reset itself, clone itself and serialize its configuration.
+* @invariant name != ""
 */
-
 class ProcessingModule {
     private:
-        std::string nameOfModule;
-        bool isActive;
-
+        std::string name;
+        bool active;
     public:
         /**
-        * @brief Constructor of the class.
-        * @param givenName descriptive name of the module.
-        * @param givenState boolean that indicates if the module is active or inactive.
+        * @brief constructor of the base class, the module starts active
+        * @param givenName descriptive name of the module, if it is empty it is corrected to "Unnamed"
         */
-        ProcessingModule(const std::string& givenName, bool givenState);
+        explicit ProcessingModule(const std::string& givenName);
 
         /**
-        * @brief Virtual destructor: allows you to delete a pointer to the base
-        * and execute first the destructor of the derived class and then this one.
+        * @brief VIRTUAL destructor, it makes the delete over a base pointer to run first the destructor of the concrete
+        *        class (freeing its own buffers) and then this one
         */
         virtual ~ProcessingModule();
 
-        const std::string& getNombre() const;
-        bool isActiveModule() const;
-        void setActive(bool state);
-
         /**
-        * @brief It receives a sample and returns the filtered sample.
-        * If the module is inactive, it must return the unfiltered sample (bypass).
-        * @param Sample numerical sample to be processed.
-        * @return The filtered sample or the original sample if the module is inactive.
+        * @brief gives the name of the module
+        * @return the descriptive name of the module, it is never empty
         */
-        virtual double processSample(double Sample) = 0;
+        const std::string& getName() const;
 
         /**
-        * @brief Clears the internal history so the filter can be reused on another channel.
+        * @brief indicates if the module is processing or if it lets the signal pass untouched
+        * @return true if the module is active, false if it is in bypass
+        */
+        bool isActive() const;
+
+        /**
+        * @brief activates or deactivates the module
+        * @param givenState true to activate it, false to put it in bypass
+        */
+        void setActive(bool givenState);
+
+        /**
+        * @brief receives a sample and gives back the filtered one, if the module is inactive the sample must go through intact (bypass)
+        * @param givenSample the sample to be processed
+        * @return the processed sample, or the same given sample if the module is inactive
+        */
+        virtual double processSample(double givenSample) = 0;
+
+        /**
+        * @brief clears the internal history in order to reuse the module over another signal without residues
         */
         virtual void reset() = 0;
 
         /**
-        * @brief Creates a deep copy of the current object, preserving its concrete derived type.
-        * @return A pointer to a newly allocated copy of the concrete module.
+        * @brief Prototype pattern: creates a deep copy of the module of the SAME concrete type
+        * @return a pointer to a new object in the heap, the caller is responsible of doing delete over it
         */
         virtual ProcessingModule* clone() const = 0;
 
         /**
-        * @brief Serializes the current configuration of the module.
-        * @return A string containing the serialized module configuration.
+        * @brief builds a text with a unique label and the current parameters, for example "MOVING_AVERAGE;W=5"
+        * @return the text with the configuration of the module
         */
-        virtual std::string serializeConfiguration() const = 0;
+        virtual std::string serialize() const = 0;
 };
 
 #endif
