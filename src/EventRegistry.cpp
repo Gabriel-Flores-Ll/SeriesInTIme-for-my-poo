@@ -1,5 +1,9 @@
 #include "EventRegistry.h"
 
+#include "ChronologicalComparator.h"
+#include "EventSorter.h"
+#include "SeverityComparator.h"
+
 #include <cmath>
 #include <stdexcept>
 
@@ -102,29 +106,6 @@ void EventRegistry::releaseResources() {
     capacity = 0;
 }
 
-void EventRegistry::sortWith(bool (*precedes)(const DetectedEvent&, const DetectedEvent&)) {
-    for (int i = 1; i < count; ++i) {
-        DetectedEvent* key = *(events + i);
-        int j = i - 1;
-        while (j >= 0 && precedes(*key, *(*(events + j)))) {
-            *(events + j + 1) = *(events + j);
-            --j;
-        }
-        *(events + j + 1) = key;
-    }
-}
-
-bool EventRegistry::compareChronologically(const DetectedEvent& a, const DetectedEvent& b) {
-    return a < b;
-}
-
-bool EventRegistry::compareBySeverity(const DetectedEvent& a, const DetectedEvent& b) {
-    if (a.getSeverity() != b.getSeverity()) {
-        return a.getSeverity() > b.getSeverity();
-    }
-    return a < b;
-}
-
 void EventRegistry::add(const DetectedEvent& event) {
     DetectedEvent* copy = event.clone();
     adopt(copy);
@@ -163,11 +144,13 @@ void EventRegistry::clear() {
 }
 
 void EventRegistry::sortChronologically() {
-    sortWith(&EventRegistry::compareChronologically);
+    const ChronologicalComparator byTimeAsc(true);
+    EventSorter::insertionSort(*this, byTimeAsc);
 }
 
 void EventRegistry::sortBySeverity() {
-    sortWith(&EventRegistry::compareBySeverity);
+    const SeverityComparator bySevDesc(true);
+    EventSorter::insertionSort(*this, bySevDesc);
 }
 
 int EventRegistry::getCount() const {

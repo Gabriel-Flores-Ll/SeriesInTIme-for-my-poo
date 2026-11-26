@@ -6,16 +6,22 @@
 #include <ostream>
 #include <string>
 
+class EventSorter;
+
 /**
  * @class EventRegistry
  * @brief Manual RAII polymorphic container owning a heterogeneous dynamic array of DetectedEvent instances
  *        without STL containers or smart pointers. Implements the complete Rule of Three with strong exception safety.
+ *        Grants encapsulated friend access strictly to EventSorter so sorting algorithms operate in-place
+ *        on the internal pointer array without exposing raw pointers publicly.
  * @invariant 0 <= count && count <= capacity.
  * @invariant If capacity == 0, then events == nullptr and count == 0.
  * @invariant For every 0 <= i < count, *(events + i) != nullptr.
  * @invariant No pointer address in [events, events + count) is duplicated or shared with another EventRegistry.
  */
 class EventRegistry {
+    friend class EventSorter;
+
 private:
     DetectedEvent** events;
     int count;
@@ -31,15 +37,6 @@ private:
      * @brief Deletes every owned DetectedEvent and the backing pointer array, resetting the registry to empty (capacity 0).
      */
     void releaseResources();
-
-    /**
-     * @brief Executes an in-place stable insertion sort over the internal pointer array using the given comparator.
-     * @param precedes Strict weak ordering comparator returning true if the first event must precede the second.
-     */
-    void sortWith(bool (*precedes)(const DetectedEvent&, const DetectedEvent&));
-
-    static bool compareChronologically(const DetectedEvent& a, const DetectedEvent& b);
-    static bool compareBySeverity(const DetectedEvent& a, const DetectedEvent& b);
 
 public:
     /**
@@ -89,12 +86,12 @@ public:
     void clear();
 
     /**
-     * @brief Stably sorts owned events in chronological order using DetectedEvent::operator<.
+     * @brief Stably sorts owned events in chronological order via EventSorter and ChronologicalComparator.
      */
     void sortChronologically();
 
     /**
-     * @brief Stably sorts owned events by descending normalized severity, breaking ties chronologically via operator<.
+     * @brief Stably sorts owned events by descending normalized severity via EventSorter and SeverityComparator.
      */
     void sortBySeverity();
 
