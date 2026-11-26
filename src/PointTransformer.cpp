@@ -1,15 +1,17 @@
 #include "PointTransformer.h"
 
+#include <cmath>
+
 PointTransformer::PointTransformer(const std::string& givenName, double givenFactor)
-    : ProcessingModule(givenName), scaleFactor(1.0) {
-    setScaleFactor(givenFactor);
+    : ProcessingModule(givenName),
+      scaleFactor((std::isfinite(givenFactor) && givenFactor != 0.0) ? givenFactor : 1.0) {}
+
+double PointTransformer::getScaleFactor() const {
+    return scaleFactor;
 }
 
-double PointTransformer::getScaleFactor() const {return scaleFactor;}
-
 bool PointTransformer::setScaleFactor(double givenFactor) {
-    if (givenFactor == 0.0) {
-        scaleFactor = 1.0;
+    if (!std::isfinite(givenFactor) || givenFactor == 0.0) {
         return false;
     }
     scaleFactor = givenFactor;
@@ -17,7 +19,9 @@ bool PointTransformer::setScaleFactor(double givenFactor) {
 }
 
 double PointTransformer::processSample(double givenSample) {
-    if (!isActive()) {return givenSample;}
+    if (!isActive() || !std::isfinite(givenSample)) {
+        return givenSample;
+    }
     return transform(givenSample) * scaleFactor;
 }
 

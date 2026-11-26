@@ -3,54 +3,41 @@
 
 #include "ProcessingModule.h"
 
+#include <string>
+
 /**
-* @class PointTransformer
-* @brief Intermediate abstract class (Level 1). It transforms every sample independently (no history).
-*        The child defines "transform" and this class multiplies the result by the scale factor.
-* @invariant scaleFactor != 0.0
-*/
+ * @class PointTransformer
+ * @brief Intermediate abstract class (Level 1) for memoryless sample-by-sample operators
+ *        followed by a validated non-zero finite scale factor (Template Method via transform()).
+ *        Follows the Rule of Zero; protected copy operations prevent slicing.
+ * @invariant std::isfinite(scaleFactor) && scaleFactor != 0.0.
+ */
 class PointTransformer : public ProcessingModule {
-    private:
-        double scaleFactor;
-    protected:
-        /**
-        * @brief constructor of the PointTransformer
-        * @param givenName descriptive name of the module, it must not be empty
-        * @param givenFactor scale factor, if it is 0.0 it is forced to 1.0
-        */
-        PointTransformer(const std::string& givenName, double givenFactor);
+private:
+    double scaleFactor;
 
-        /**
-        * @brief transformation of ONE sample, it is implemented by each leaf class
-        * @param givenSample the sample to be transformed
-        * @return the transformed sample, before applying the scale factor
-        */
-        virtual double transform(double givenSample) const = 0;
-    public:
-        /**
-        * @brief gives the current scale factor
-        * @return the scale factor, it is never 0.0
-        */
-        double getScaleFactor() const;
+protected:
+    PointTransformer(const std::string& givenName, double givenFactor = 1.0);
+    PointTransformer(const PointTransformer& other) = default;
+    PointTransformer& operator=(const PointTransformer& other) = default;
 
-        /**
-        * @brief changes the scale factor
-        * @param givenFactor the new factor, it must be different from 0.0
-        * @return true if the value was accepted, false if it was 0.0 (in that case the factor is forced to 1.0)
-        */
-        bool setScaleFactor(double givenFactor);
+    /**
+     * @brief Concrete point-wise transformation applied before multiplying by scaleFactor.
+     */
+    virtual double transform(double givenSample) const = 0;
 
-        /**
-        * @brief bypass if inactive, otherwise it applies transform and then multiplies by the scale factor
-        * @param givenSample the sample to be processed
-        * @return transform(givenSample) * scaleFactor, or the same sample if the module is inactive
-        */
-        double processSample(double givenSample) override;
+public:
+    double getScaleFactor() const;
 
-        /**
-        * @brief does nothing, a point transformer has no history to clear
-        */
-        void reset() override;
+    /**
+     * @brief Updates scaleFactor if finite and non-zero; otherwise preserves the previous valid value.
+     *        Virtual so subclasses with stricter invariants (e.g., WaveRectifier > 0.0) can enforce them.
+     * @return true if updated, false if rejected.
+     */
+    virtual bool setScaleFactor(double givenFactor);
+
+    double processSample(double givenSample) override;
+    void reset() override;
 };
 
 #endif

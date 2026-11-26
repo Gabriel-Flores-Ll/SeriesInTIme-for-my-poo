@@ -3,54 +3,49 @@
 
 #include "PointTransformer.h"
 
-/** @brief working modes of the rectifier */
-enum class RectifierMode {FullWave, HalfWave};
+#include <string>
 
 /**
-* @class WaveRectifier
-* @brief Full wave: |x|. Half wave: negative values become 0. It always gives values >= 0 (while the scale factor is positive).
-* @invariant scaleFactor != 0.0 (inherited from PointTransformer)
-*/
+ * @enum RectifierMode
+ * @brief Operating modes for WaveRectifier.
+ */
+enum class RectifierMode {
+    FullWave,
+    HalfWave
+};
+
+/**
+ * @class WaveRectifier
+ * @brief Full-wave (|x|) or half-wave (max(0, x)) rectifier enforcing strictly positive scaleFactor
+ *        so active output is guaranteed non-negative for all finite samples.
+ *        Follows the Rule of Zero.
+ * @invariant std::isfinite(getScaleFactor()) && getScaleFactor() > 0.0.
+ */
 class WaveRectifier : public PointTransformer {
-    private:
-        RectifierMode mode;
-    protected:
-        /**
-        * @brief rectifies one sample according to the current mode
-        * @param givenSample the sample to be rectified
-        * @return the absolute value in full wave mode, or the sample / 0.0 in half wave mode
-        */
-        double transform(double givenSample) const override;
-    public:
-        /**
-        * @brief constructor of the rectifier
-        * @param givenMode working mode, full wave by default
-        */
-        explicit WaveRectifier(RectifierMode givenMode = RectifierMode::FullWave);
+private:
+    RectifierMode mode;
 
-        /**
-        * @brief gives the current working mode
-        * @return the mode of the rectifier
-        */
-        RectifierMode getMode() const;
+protected:
+    double transform(double givenSample) const override;
 
-        /**
-        * @brief changes the working mode
-        * @param givenMode the new mode
-        */
-        void setMode(RectifierMode givenMode);
+public:
+    /**
+     * @brief Constructs a WaveRectifier with strictly positive gain (fallback: 1.0 if <= 0.0 or non-finite).
+     */
+    explicit WaveRectifier(RectifierMode givenMode = RectifierMode::FullWave,
+                           double givenScaleFactor = 1.0);
 
-        /**
-        * @brief deep copy of this rectifier
-        * @return a pointer to a new WaveRectifier in the heap, the caller must delete it
-        */
-        ProcessingModule* clone() const override;
+    RectifierMode getMode() const;
+    void setMode(RectifierMode givenMode);
 
-        /**
-        * @brief builds the configuration text of the rectifier
-        * @return a text like "RECTIFIER;mode=FULL_WAVE" or "RECTIFIER;mode=HALF_WAVE"
-        */
-        std::string serialize() const override;
+    /**
+     * @brief Updates scaleFactor only if finite and strictly > 0.0; preserves previous value otherwise.
+     * @return true if updated, false if rejected.
+     */
+    bool setScaleFactor(double givenFactor) override;
+
+    ProcessingModule* clone() const override;
+    std::string serialize() const override;
 };
 
 #endif

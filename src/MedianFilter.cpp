@@ -1,14 +1,15 @@
 #include "MedianFilter.h"
 
-MedianFilter::MedianFilter(int givenWindow) : WindowFilter("MedianFilter", givenWindow) {}
+MedianFilter::MedianFilter(int givenWindow)
+    : WindowFilter("MedianFilter", givenWindow) {}
 
 void MedianFilter::insertionSort(double* givenArray, int givenQuantity) {
-    for (int i = 1; i < givenQuantity; i++) {
-        double key = *(givenArray + i);
+    for (int i = 1; i < givenQuantity; ++i) {
+        const double key = *(givenArray + i);
         int j = i - 1;
-        while (j >= 0 && *(givenArray + j) > key) {        // shifts to the right the bigger ones
+        while (j >= 0 && *(givenArray + j) > key) {
             *(givenArray + j + 1) = *(givenArray + j);
-            j--;
+            --j;
         }
         *(givenArray + j + 1) = key;
     }
@@ -16,20 +17,42 @@ void MedianFilter::insertionSort(double* givenArray, int givenQuantity) {
 
 double MedianFilter::calculate() const {
     const int n = getValidSamples();
+    if (n <= 0) {
+        return 0.0;
+    }
 
-    double* copy = new double[n];                          // temporary auxiliary array
+    double stackCopy[kStackFastPathLimit];
+    double* heapCopy = nullptr;
+    double* work = stackCopy;
+
+    if (n > kStackFastPathLimit) {
+        heapCopy = new double[n];
+        work = heapCopy;
+    }
+
     const double* original = getBuffer();
-    for (int i = 0; i < n; i++) {*(copy + i) = *(original + i);}
+    for (int i = 0; i < n; ++i) {
+        *(work + i) = *(original + i);
+    }
 
-    insertionSort(copy, n);                                // the COPY is sorted, never the buffer
-    double median = *(copy + (n - 1) / 2);                 // central element
+    insertionSort(work, n);
 
-    delete[] copy;
+    double median = 0.0;
+    if (n % 2 == 1) {
+        median = *(work + (n / 2));
+    } else {
+        median = 0.5 * (*(work + (n / 2) - 1) + *(work + (n / 2)));
+    }
+
+    delete[] heapCopy;
     return median;
 }
 
-ProcessingModule* MedianFilter::clone() const {return new MedianFilter(*this);}
+ProcessingModule* MedianFilter::clone() const {
+    return new MedianFilter(*this);
+}
 
 std::string MedianFilter::serialize() const {
-    return "MEDIAN;W=" + std::to_string(getWindowSize());
+    return "MEDIAN;W=" + std::to_string(getWindowSize()) +
+           ";active=" + (isActive() ? "1" : "0");
 }
