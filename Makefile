@@ -10,6 +10,16 @@ FASE1_SRCS := src/DinamicArr.cpp \
               src/ChannelSignal.cpp \
               src/SlicingWindow.cpp
 
+FASE2_SRCS := src/ProcessingModule.cpp \
+              src/WindowFilter.cpp \
+              src/PointTransformer.cpp \
+              src/MovingAverageFilter.cpp \
+              src/MedianFilter.cpp \
+              src/DifferentialFilter.cpp \
+              src/WaveRectifier.cpp \
+              src/ThresholdLimiter.cpp \
+              src/ProcessingPipeline.cpp
+
 FASE3_SRCS := src/DetectecEvent.cpp \
               src/PeakEvent.cpp \
               src/ThresholdEvent.cpp \
@@ -22,19 +32,25 @@ FASE3_SRCS := src/DetectecEvent.cpp \
               src/DetectionEngine.cpp
 
 FASE1_OBJS := $(patsubst src/%.cpp,$(BUILD_DIR)/%.o,$(FASE1_SRCS))
+FASE2_OBJS := $(patsubst src/%.cpp,$(BUILD_DIR)/%.o,$(FASE2_SRCS))
 FASE3_OBJS := $(patsubst src/%.cpp,$(BUILD_DIR)/%.o,$(FASE3_SRCS))
 
 TEST_F1_OBJ := $(BUILD_DIR)/main_fase1.o
+TEST_F2_OBJ := $(BUILD_DIR)/main_fase2.o
 TEST_F3_OBJ := $(BUILD_DIR)/main_fase3.o
 
 TARGET_F1 := $(BUILD_DIR)/test_fase1
+TARGET_F2 := $(BUILD_DIR)/test_fase2
 TARGET_F3 := $(BUILD_DIR)/test_fase3
 
-.PHONY: all fase1 fase3 run-fase1 run-fase3 run-all valgrind-fase1 valgrind-fase3 valgrind-all clean
+.PHONY: all fase1 fase2 fase3 run-fase1 run-fase2 run-fase3 run-all \
+        valgrind-fase1 valgrind-fase2 valgrind-fase3 valgrind-all clean
 
-all: $(TARGET_F1) $(TARGET_F3)
+all: $(TARGET_F1) $(TARGET_F2) $(TARGET_F3)
 
 fase1: $(TARGET_F1)
+
+fase2: $(TARGET_F2)
 
 fase3: $(TARGET_F3)
 
@@ -47,27 +63,36 @@ $(BUILD_DIR)/%.o: src/%.cpp | $(BUILD_DIR)
 $(BUILD_DIR)/%.o: tests/%.cpp | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(TARGET_F1): $(FASE1_OBJS) $(TEST_F1_OBJ)
+$(TARGET_F1): $(FASE1_OBJS) $(FASE2_OBJS) $(TEST_F1_OBJ)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-$(TARGET_F3): $(FASE1_OBJS) $(FASE3_OBJS) $(TEST_F3_OBJ)
+$(TARGET_F2): $(FASE1_OBJS) $(FASE2_OBJS) $(TEST_F2_OBJ)
+	$(CXX) $(CXXFLAGS) $^ -o $@
+
+$(TARGET_F3): $(FASE1_OBJS) $(FASE2_OBJS) $(FASE3_OBJS) $(TEST_F3_OBJ)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 run-fase1: $(TARGET_F1)
 	./$(TARGET_F1)
 
+run-fase2: $(TARGET_F2)
+	./$(TARGET_F2)
+
 run-fase3: $(TARGET_F3)
 	./$(TARGET_F3)
 
-run-all: run-fase1 run-fase3
+run-all: run-fase1 run-fase2 run-fase3
 
 valgrind-fase1: $(TARGET_F1)
 	$(VALGRIND) ./$(TARGET_F1)
 
+valgrind-fase2: $(TARGET_F2)
+	$(VALGRIND) ./$(TARGET_F2)
+
 valgrind-fase3: $(TARGET_F3)
 	$(VALGRIND) ./$(TARGET_F3)
 
-valgrind-all: valgrind-fase1 valgrind-fase3
+valgrind-all: valgrind-fase1 valgrind-fase2 valgrind-fase3
 
 clean:
-	rm -f $(BUILD_DIR)/*.o $(TARGET_F1) $(TARGET_F3)
+	rm -f $(BUILD_DIR)/*.o $(TARGET_F1) $(TARGET_F2) $(TARGET_F3)
