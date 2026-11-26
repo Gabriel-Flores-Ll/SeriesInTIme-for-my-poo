@@ -38,26 +38,32 @@ FASE4_SRCS := src/EventComparator.cpp \
               src/ChannelComparator.cpp \
               src/EventSorter.cpp
 
+FASE5_SRCS := src/StudySession.cpp \
+              src/PersistenceManager.cpp
+
 FASE1_OBJS := $(patsubst src/%.cpp,$(BUILD_DIR)/%.o,$(FASE1_SRCS))
 FASE2_OBJS := $(patsubst src/%.cpp,$(BUILD_DIR)/%.o,$(FASE2_SRCS))
 FASE3_OBJS := $(patsubst src/%.cpp,$(BUILD_DIR)/%.o,$(FASE3_SRCS))
 FASE4_OBJS := $(patsubst src/%.cpp,$(BUILD_DIR)/%.o,$(FASE4_SRCS))
+FASE5_OBJS := $(patsubst src/%.cpp,$(BUILD_DIR)/%.o,$(FASE5_SRCS))
 
 TEST_F1_OBJ := $(BUILD_DIR)/main_fase1.o
 TEST_F2_OBJ := $(BUILD_DIR)/main_fase2.o
 TEST_F3_OBJ := $(BUILD_DIR)/main_fase3.o
 TEST_F4_OBJ := $(BUILD_DIR)/main_fase4.o
+TEST_F5_OBJ := $(BUILD_DIR)/main_fase5.o
 
 TARGET_F1 := $(BUILD_DIR)/test_fase1
 TARGET_F2 := $(BUILD_DIR)/test_fase2
 TARGET_F3 := $(BUILD_DIR)/test_fase3
 TARGET_F4 := $(BUILD_DIR)/test_fase4
+TARGET_F5 := $(BUILD_DIR)/test_fase5
 
-.PHONY: all fase1 fase2 fase3 fase4 \
-        run-fase1 run-fase2 run-fase3 run-fase4 run-all \
-        valgrind-fase1 valgrind-fase2 valgrind-fase3 valgrind-fase4 valgrind-all clean
+.PHONY: all fase1 fase2 fase3 fase4 fase5 \
+        run-fase1 run-fase2 run-fase3 run-fase4 run-fase5 run-all \
+        valgrind-fase1 valgrind-fase2 valgrind-fase3 valgrind-fase4 valgrind-fase5 valgrind-all clean
 
-all: $(TARGET_F1) $(TARGET_F2) $(TARGET_F3) $(TARGET_F4)
+all: $(TARGET_F1) $(TARGET_F2) $(TARGET_F3) $(TARGET_F4) $(TARGET_F5)
 
 fase1: $(TARGET_F1)
 
@@ -66,6 +72,8 @@ fase2: $(TARGET_F2)
 fase3: $(TARGET_F3)
 
 fase4: $(TARGET_F4)
+
+fase5: $(TARGET_F5)
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
@@ -88,6 +96,9 @@ $(TARGET_F3): $(FASE1_OBJS) $(FASE2_OBJS) $(FASE3_OBJS) $(FASE4_OBJS) $(TEST_F3_
 $(TARGET_F4): $(FASE1_OBJS) $(FASE2_OBJS) $(FASE3_OBJS) $(FASE4_OBJS) $(TEST_F4_OBJ)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
+$(TARGET_F5): $(FASE1_OBJS) $(FASE2_OBJS) $(FASE3_OBJS) $(FASE4_OBJS) $(FASE5_OBJS) $(TEST_F5_OBJ)
+	$(CXX) $(CXXFLAGS) $^ -o $@
+
 run-fase1: $(TARGET_F1)
 	./$(TARGET_F1)
 
@@ -100,7 +111,10 @@ run-fase3: $(TARGET_F3)
 run-fase4: $(TARGET_F4)
 	./$(TARGET_F4)
 
-run-all: run-fase1 run-fase2 run-fase3 run-fase4
+run-fase5: $(TARGET_F5)
+	./$(TARGET_F5)
+
+run-all: run-fase1 run-fase2 run-fase3 run-fase4 run-fase5
 
 valgrind-fase1: $(TARGET_F1)
 	$(VALGRIND) ./$(TARGET_F1)
@@ -114,7 +128,10 @@ valgrind-fase3: $(TARGET_F3)
 valgrind-fase4: $(TARGET_F4)
 	$(VALGRIND) ./$(TARGET_F4)
 
-valgrind-all: valgrind-fase1 valgrind-fase2 valgrind-fase3 valgrind-fase4
+valgrind-fase5: $(TARGET_F5)
+	$(VALGRIND) ./$(TARGET_F5)
+
+valgrind-all: valgrind-fase1 valgrind-fase2 valgrind-fase3 valgrind-fase4 valgrind-fase5
 
 clean:
-	rm -f $(BUILD_DIR)/*.o $(TARGET_F1) $(TARGET_F2) $(TARGET_F3) $(TARGET_F4)
+	rm -f $(BUILD_DIR)/*.o $(TARGET_F1) $(TARGET_F2) $(TARGET_F3) $(TARGET_F4) $(TARGET_F5)
